@@ -1,6 +1,6 @@
 {
   "name": "@tomcrack/discord-easy-interactions",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A simple and modular library for managing interactive flows of Discord.js v14 (buttons, selects, V2 modals and Wizard Forms sequentially).",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,9 @@
     "index.js",
     "FormBuilder.js",
     "InteractionMesh.js",
-    "LayoutV2.js"
+    "LayoutV2.js",
+    "README.md",
+    "LICENSE"
   ],
   "peerDependencies": {
     "discord.js": "^14.0.0"
