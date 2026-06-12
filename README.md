@@ -33,7 +33,11 @@ const { FormBuilder } = require('@tomcrack/discord-easy-interactions');
 const { TextInputStyle } = require('discord.js');
 
 // Inside your command execute function:
-const form = new FormBuilder(interactionOrMessage)
+const form = new FormBuilder(interactionOrMessage, {
+    timeoutMessage: '⏳ Time limit expired! Please run the command again.',
+    unauthorizedMessage: '❌ Only the command executor can interact here.',
+    modalSubmittedMessage: '✅ Form received. Thank you!'
+})
     .addTextStep('What is your GitHub username?', {
         validate: (m) => m.content.startsWith('https://github.com/'),
         retryMessage: 'Please provide a valid GitHub profile link.'

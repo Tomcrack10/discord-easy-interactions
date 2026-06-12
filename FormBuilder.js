@@ -16,12 +16,19 @@ const {
 } = require('discord.js');
 
 class FormBuilder {
-    constructor(interactionOrMessage) {
+    constructor(interactionOrMessage, options = {}) {
         this.ctx = interactionOrMessage;
         this.userId = interactionOrMessage.user ? interactionOrMessage.user.id : interactionOrMessage.author.id;
         this.channel = interactionOrMessage.channel;
         this.steps = [];
         this.answers = new Map();
+
+        // Mensajes personalizables
+        this.messages = {
+            timeout: options.timeoutMessage || '⌛ El tiempo límite para completar el formulario ha expirado.',
+            unauthorized: options.unauthorizedMessage || 'No puedes interactuar en este formulario.',
+            modalSubmitted: options.modalSubmittedMessage || 'Respuesta recibida correctamente.'
+        };
     }
 
     // Agregar un paso de pregunta abierta por texto
@@ -30,7 +37,7 @@ class FormBuilder {
             type: 'text',
             questionText,
             validate: options.validate || (() => true),
-            retryMessage: options.retryMessage || 'Respuesta inválida. Intenta de nuevo:'
+            retryMessage: options.retryMessage || '❌ Respuesta inválida. Intenta de nuevo:'
         });
         return this;
     }
@@ -104,7 +111,8 @@ class FormBuilder {
         } catch (err) {
             if (err.message === 'timeout') {
                 try {
-                    await this.channel.send({ content: '⌛ El tiempo límite para completar el formulario ha expirado.' });
+                    const payload = this._buildPayload(this.messages.timeout);
+                    await this.channel.send(payload);
                 } catch (_) {}
             } else {
                 console.error('[discord-easy-interactions] Error en FormBuilder:', err);
@@ -150,7 +158,8 @@ class FormBuilder {
                     collector.stop('valid');
                     resolve(m.content);
                 } else {
-                    await this.channel.send({ content: `❌ ${step.retryMessage}` });
+                    const payload = this._buildPayload(step.retryMessage);
+                    await this.channel.send(payload);
                 }
             });
 
@@ -188,7 +197,11 @@ class FormBuilder {
 
             collector.on('collect', async (i) => {
                 if (i.user.id !== this.userId) {
-                    return i.reply({ content: 'No puedes interactuar en este formulario.', ephemeral: true });
+                    const payload = this._buildPayload(this.messages.unauthorized);
+                    if (typeof payload === 'object') {
+                        payload.ephemeral = payload.ephemeral !== false;
+                    }
+                    return i.reply(payload);
                 }
                 collector.stop('selected');
                 
@@ -233,7 +246,11 @@ class FormBuilder {
 
             collector.on('collect', async (i) => {
                 if (i.user.id !== this.userId) {
-                    return i.reply({ content: 'No puedes interactuar en este formulario.', ephemeral: true });
+                    const payload = this._buildPayload(this.messages.unauthorized);
+                    if (typeof payload === 'object') {
+                        payload.ephemeral = payload.ephemeral !== false;
+                    }
+                    return i.reply(payload);
                 }
 
                 // Construir el modal
@@ -336,7 +353,11 @@ class FormBuilder {
 
                     // Agradecer/Confirmar envío del modal de forma efímera
                     try {
-                        await submitted.reply({ content: 'Respuesta recibida correctamente.', ephemeral: true });
+                        const payload = this._buildPayload(this.messages.modalSubmitted);
+                        if (typeof payload === 'object') {
+                            payload.ephemeral = payload.ephemeral !== false;
+                        }
+                        await submitted.reply(payload);
                     } catch (_) {}
 
                     collector.stop('submitted');
