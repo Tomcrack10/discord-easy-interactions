@@ -1,6 +1,16 @@
 const { InteractionMesh, MeshButton, MeshSelect } = require('./InteractionMesh');
 const FormBuilder = require('./FormBuilder');
-const { Container, TextDisplay, Section, Button } = require('./LayoutV2');
+const { 
+    Container, 
+    TextDisplay, 
+    Section, 
+    Button, 
+    Separator, 
+    MediaGallery, 
+    ActionRow, 
+    StringSelect, 
+    ChannelSelect 
+} = require('./LayoutV2');
 
 module.exports = {
     InteractionMesh,
@@ -10,5 +20,10 @@ module.exports = {
     Container,
     TextDisplay,
     Section,
-    Button
+    Button,
+    Separator,
+    MediaGallery,
+    ActionRow,
+    StringSelect,
+    ChannelSelect
 };

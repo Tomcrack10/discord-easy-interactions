@@ -7,6 +7,14 @@ const buttonStyles = {
     link: 5
 };
 
+// Helper genérico para compilar componentes (soporta .compile, .toJSON y JSON nativo)
+function compileComponent(c) {
+    if (!c) return c;
+    if (typeof c.compile === 'function') return c.compile();
+    if (typeof c.toJSON === 'function') return c.toJSON();
+    return c;
+}
+
 class Container {
     constructor() {
         this.accentColor = 0;
@@ -28,7 +36,7 @@ class Container {
         return {
             type: 17, // Container type
             accent_color: this.accentColor,
-            components: this.components.map(c => typeof c.compile === 'function' ? c.compile() : c)
+            components: this.components.map(compileComponent)
         };
     }
 }
@@ -70,8 +78,8 @@ class Section {
     compile() {
         return {
             type: 9, // Section type
-            components: this.components.map(c => typeof c.compile === 'function' ? c.compile() : c),
-            accessory: this.accessory && typeof this.accessory.compile === 'function' ? this.accessory.compile() : this.accessory
+            components: this.components.map(compileComponent),
+            accessory: compileComponent(this.accessory)
         };
     }
 }
@@ -127,9 +135,141 @@ class Button {
     }
 }
 
+class Separator {
+    compile() {
+        return {
+            type: 14 // Separator type
+        };
+    }
+}
+
+class MediaGallery {
+    constructor() {
+        this.urls = [];
+    }
+
+    addMedia(url) {
+        this.urls.push(url);
+        return this;
+    }
+
+    compile() {
+        return {
+            type: 12, // MediaGallery type
+            items: this.urls.map(url => ({ media: { url } }))
+        };
+    }
+}
+
+class ActionRow {
+    constructor() {
+        this.components = [];
+    }
+
+    addComponent(component) {
+        this.components.push(component);
+        return this;
+    }
+
+    compile() {
+        return {
+            type: 1, // Action Row type
+            components: this.components.map(compileComponent)
+        };
+    }
+}
+
+class StringSelect {
+    constructor() {
+        this.data = {
+            type: 3, // String Select type
+            options: []
+        };
+    }
+
+    setCustomId(customId) {
+        this.data.custom_id = customId;
+        return this;
+    }
+
+    setPlaceholder(placeholder) {
+        this.data.placeholder = placeholder;
+        return this;
+    }
+
+    setDisabled(disabled) {
+        this.data.disabled = disabled;
+        return this;
+    }
+
+    addOption(label, value, description = '', isDefault = false) {
+        this.data.options.push({
+            label,
+            value,
+            description,
+            default: isDefault
+        });
+        return this;
+    }
+
+    addOptions(optionsArray) {
+        optionsArray.forEach(opt => {
+            this.addOption(opt.label, opt.value, opt.description, opt.default);
+        });
+        return this;
+    }
+
+    compile() {
+        return structuredClone(this.data);
+    }
+}
+
+class ChannelSelect {
+    constructor() {
+        this.data = {
+            type: 8, // Channel Select type
+            channel_types: []
+        };
+    }
+
+    setCustomId(customId) {
+        this.data.custom_id = customId;
+        return this;
+    }
+
+    setPlaceholder(placeholder) {
+        this.data.placeholder = placeholder;
+        return this;
+    }
+
+    setDisabled(disabled) {
+        this.data.disabled = disabled;
+        return this;
+    }
+
+    addChannelType(type) {
+        this.data.channel_types.push(type);
+        return this;
+    }
+
+    setChannelTypes(types) {
+        this.data.channel_types = types;
+        return this;
+    }
+
+    compile() {
+        return structuredClone(this.data);
+    }
+}
+
 module.exports = {
     Container,
     TextDisplay,
     Section,
-    Button
+    Button,
+    Separator,
+    MediaGallery,
+    ActionRow,
+    StringSelect,
+    ChannelSelect
 };
